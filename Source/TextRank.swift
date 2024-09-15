@@ -23,7 +23,7 @@ internal final class TextRank<T: Hashable> {
     let score: Float = 0.15
     let damping: Float = 0.85
     let convergence: Float = 0.01
-    let maxIterations: Int = 50
+    let defaultMaxIterations: Int = 50
 
     func add(edge from: T, to: T, weight: Float = 1.0) {
         if from == to { return }
@@ -35,9 +35,10 @@ internal final class TextRank<T: Hashable> {
 
     func execute() -> Node {
         var iterations = 1
+        var maxIterations = nodes.count > 10000 ? 5 : defaultMaxIterations
         var stepNodes = iteration(nodes)
         while !convergence(stepNodes, nodes: nodes) {
-            if iterations > maxIterations { break }
+            if iterations > defaultMaxIterations { break }
             iterations += 1
             nodes = stepNodes
             stepNodes = iteration(nodes)
@@ -50,7 +51,8 @@ internal final class TextRank<T: Hashable> {
     private func iteration(_ nodes: Node) -> Node {
         var vertex = Node()
         for (node, links) in graph {
-            let score: Float = links.reduce(0.0) { $0 + nodes[$1]! / outlinks[$1]! * weights[$1, node] }
+            var score: Float = links.reduce(0.0) { $0 + nodes[$1]! / outlinks[$1]! * weights[$1, node] }
+            if score.isNaN { score = 0 } //ignore dangling nodes so graph can converge faster
             vertex[node] = (1-damping/nodes.count) + damping * score
         }
         return vertex
