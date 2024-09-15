@@ -23,6 +23,7 @@ internal final class TextRank<T: Hashable> {
     let score: Float = 0.15
     let damping: Float = 0.85
     let convergence: Float = 0.01
+    let maxIterations: Int = 50
 
     func add(edge from: T, to: T, weight: Float = 1.0) {
         if from == to { return }
@@ -33,8 +34,11 @@ internal final class TextRank<T: Hashable> {
     }
 
     func execute() -> Node {
+        var iterations = 1
         var stepNodes = iteration(nodes)
         while !convergence(stepNodes, nodes: nodes) {
+            if iterations > maxIterations { break }
+            iterations += 1
             nodes = stepNodes
             stepNodes = iteration(nodes)
         }
