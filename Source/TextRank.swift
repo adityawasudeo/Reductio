@@ -35,7 +35,10 @@ internal final class TextRank<T: Hashable> {
 
     func execute() -> Node {
         var iterations = 1
-        let maxIterations = nodes.count > 10000 ? 5 : defaultMaxIterations
+        var maxIterations = defaultMaxIterations
+        if nodes.count > 5000 { maxIterations = 5 }
+        if nodes.count > 10000 { maxIterations = 1 }
+        
         var stepNodes = iteration(nodes)
         while !convergence(stepNodes, nodes: nodes) {
             if iterations > maxIterations { break }
